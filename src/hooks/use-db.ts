@@ -24,7 +24,7 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>) {
     await db.transactions.add(transaction);
 
     // Update account balance
-    const account = await db.accounts.get(transaction.accountId);
+    const account = await db.accounts.get(Number(transaction.accountId));
     if (!account) throw new Error("Account not found");
 
     let newBalance = account.balance;
@@ -35,14 +35,14 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>) {
     } else if (transaction.type === 'TRANSFER' && transaction.transferToAccountId) {
        newBalance -= transaction.amount;
        // Handle destination account
-       const destAccount = await db.accounts.get(transaction.transferToAccountId);
+       const destAccount = await db.accounts.get(Number(transaction.transferToAccountId));
        if(destAccount) {
-         await db.accounts.update(transaction.transferToAccountId, {
+         await db.accounts.update(Number(transaction.transferToAccountId), {
            balance: destAccount.balance + transaction.amount
          });
        }
     }
 
-    await db.accounts.update(transaction.accountId, { balance: newBalance });
+    await db.accounts.update(Number(transaction.accountId), { balance: newBalance });
   });
 }
