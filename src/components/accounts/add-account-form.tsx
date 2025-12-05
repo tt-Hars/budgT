@@ -19,8 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { addAccount } from "@/hooks/use-db"
+import { addAccount, updateAccount, deleteAccount } from "@/hooks/use-db"
 import { toast } from "sonner"
+import type { Account } from "@/db"
+import { Trash2 } from "lucide-react"
 
 const accountFormSchema = z.object({
   name: z.string().min(2, {
@@ -38,18 +40,29 @@ const accountFormSchema = z.object({
 
 type AccountFormValues = z.infer<typeof accountFormSchema>;
 
-export function AddAccountForm({ onSuccess }: { onSuccess?: () => void }) {
+interface AccountFormProps {
+  account?: Account
+  onSuccess?: () => void
+}
+
+export function AccountForm({ account, onSuccess }: AccountFormProps) {
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema) as any,
     defaultValues: {
-      name: "",
-      type: "SAVINGS",
-      balance: 0,
-      currency: "USD",
+      name: account?.name || "",
+      type: (account?.type as any) || "SAVINGS",
+      balance: account?.balance || 0,
+      currency: account?.currency || "USD",
+      creditCardDetails: account?.creditCardDetails ? {
+        limit: account.creditCardDetails.limit,
+        billingDay: account.creditCardDetails.billingDay,
+        dueDay: account.creditCardDetails.dueDay,
+      } : undefined
     },
   })
 
   const accountType = form.watch("type")
+  const isEditing = !!account
 
   async function onSubmit(values: z.infer<typeof accountFormSchema>) {
     try {
@@ -65,11 +78,8 @@ export function AddAccountForm({ onSuccess }: { onSuccess?: () => void }) {
          }
       }
 
-      await addAccount({
+      const accountData = {
         ...values,
-        // For credit cards, initial balance is usually 0 (debt is tracked) or negative if there is existing debt.
-        // But allowing user input is fine.
-        createdAt: Date.now(),
         updatedAt: Date.now(),
         // Fix for type mismatch if necessary, or ensure clean object
         creditCardDetails: values.type === 'CREDIT_CARD' && values.creditCardDetails ? {
@@ -77,13 +87,38 @@ export function AddAccountForm({ onSuccess }: { onSuccess?: () => void }) {
              billingDay: Number(values.creditCardDetails.billingDay),
              dueDay: Number(values.creditCardDetails.dueDay)
         } : undefined
-      })
-      toast.success("Account created successfully")
+      }
+
+      if (isEditing && account) {
+        await updateAccount(account.id, accountData)
+        toast.success("Account updated successfully")
+      } else {
+        await addAccount({
+          ...accountData,
+          createdAt: Date.now(),
+        })
+        toast.success("Account created successfully")
+      }
+
       form.reset()
       onSuccess?.()
     } catch (error) {
       console.error(error)
-      toast.error("Failed to create account")
+      toast.error(isEditing ? "Failed to update account" : "Failed to create account")
+    }
+  }
+
+  async function onDelete() {
+    if (!account) return;
+    if (confirm("Are you sure you want to delete this account? All associated transactions will also be deleted.")) {
+      try {
+        await deleteAccount(account.id);
+        toast.success("Account deleted successfully");
+        onSuccess?.();
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to delete account");
+      }
     }
   }
 
@@ -191,7 +226,14 @@ export function AddAccountForm({ onSuccess }: { onSuccess?: () => void }) {
           </div>
         )}
 
-        <Button type="submit" className="w-full">Create Account</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">{isEditing ? "Update Account" : "Create Account"}</Button>
+            {isEditing && (
+                <Button type="button" variant="destructive" size="icon" onClick={onDelete}>
+                    <Trash2 className="h-4 w-4" />
+                </Button>
+            )}
+        </div>
       </form>
     </Form>
   )
