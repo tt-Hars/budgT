@@ -21,10 +21,18 @@ function App() {
              <ModeToggle />
           </div>
         </header>
-        <main className="container mx-auto p-4 pb-20 max-w-lg space-y-6">
-           <DashboardOverview />
-           <AccountList />
-           <TransactionList />
+        <main className="container mx-auto p-4 md:p-8 pb-20 max-w-2xl space-y-8">
+           <section className="space-y-4">
+             <DashboardOverview />
+           </section>
+
+           <section className="space-y-4">
+             <AccountList />
+           </section>
+
+           <section className="space-y-4">
+             <TransactionList />
+           </section>
         </main>
         <Toaster />
       </div>

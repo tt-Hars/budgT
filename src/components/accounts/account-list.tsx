@@ -9,7 +9,7 @@ interface AccountListProps {
   onAddAccount?: () => void
 }
 
-export function AccountListView({ accounts, onAddAccount }: AccountListProps) {
+export function AccountListView({ accounts }: AccountListProps) {
   const getIcon = (type: string) => {
     switch (type) {
       case 'CREDIT_CARD': return <CreditCard className="h-5 w-5" />;
@@ -38,7 +38,7 @@ export function AccountListView({ accounts, onAddAccount }: AccountListProps) {
 
       <div className="grid gap-4 md:grid-cols-2">
         {accounts?.map((account) => (
-          <Card key={account.id}>
+          <Card key={account.id} className="shadow-sm border-muted-foreground/20 hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {account.name}

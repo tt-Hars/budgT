@@ -148,7 +148,7 @@ export function AddTransactionForm({ onSuccess }: { onSuccess?: () => void }) {
                 </FormControl>
                 <SelectContent>
                   {accounts?.map(acc => (
-                      <SelectItem key={acc.id} value={acc.id || ""}>{acc.name} ({acc.currency})</SelectItem>
+                      <SelectItem key={acc.id} value={acc.id || "unknown"}>{acc.name} ({acc.currency})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -36,9 +36,9 @@ export function TransactionListView({ transactions, accounts }: TransactionListP
         <AddTransactionDialog />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {transactions?.map((transaction) => (
-          <Card key={transaction.id} className="overflow-hidden">
+          <Card key={transaction.id} className="overflow-hidden shadow-sm border-muted-foreground/20 hover:shadow-md transition-shadow">
             <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-muted rounded-full">
