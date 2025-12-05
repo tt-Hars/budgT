@@ -3,7 +3,7 @@ import Dexie, { type Table } from 'dexie';
 export type AccountType = 'SAVINGS' | 'CHECKING' | 'CREDIT_CARD' | 'WALLET' | 'CASH';
 
 export interface Account {
-  id?: string;
+  id?: number;
   name: string;
   type: AccountType;
   balance: number;
@@ -20,8 +20,8 @@ export interface Account {
 export type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER';
 
 export interface Transaction {
-  id?: string;
-  accountId: string;
+  id?: number;
+  accountId: string; // References Account.id (as string for now to match forms?) Or number? Form uses string. Let's keep foreign keys as string for now to avoid massive refactor, but primary keys as number.
   amount: number;
   type: TransactionType;
   category: string;
@@ -33,7 +33,7 @@ export interface Transaction {
 }
 
 export interface Tag {
-  id?: string;
+  id?: number;
   name: string;
   color: string;
 }

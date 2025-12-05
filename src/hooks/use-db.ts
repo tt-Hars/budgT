@@ -25,19 +25,14 @@ export async function updateAccount(id: number, changes: Partial<Account>) {
 export async function deleteAccount(id: number) {
   return await db.transaction('rw', db.accounts, db.transactions, async () => {
     await db.accounts.delete(id);
-    // Also delete related transactions or handle them?
-    // For now, let's just delete the transactions associated with this account to avoid orphans.
     await db.transactions.where('accountId').equals(String(id)).delete();
-    // Note: If this account was a destination for transfers, those transactions remain but point to nowhere.
-    // Ideally we should find transfers TO this account and revert/delete, but that's complex.
-    // Keeping it simple for now: delete transactions owned by this account.
   });
 }
 
 export async function addTransaction(transaction: Omit<Transaction, 'id'>) {
   return await db.transaction('rw', db.accounts, db.transactions, async () => {
-    // Add the transaction
-    await db.transactions.add(transaction);
+    // Add the transaction without ID. Dexie will auto-increment.
+    const id = await db.transactions.add(transaction as Transaction);
 
     // Update account balance
     const account = await db.accounts.get(Number(transaction.accountId));
@@ -60,13 +55,12 @@ export async function addTransaction(transaction: Omit<Transaction, 'id'>) {
     }
 
     await db.accounts.update(Number(transaction.accountId), { balance: newBalance });
+
+    return id; // Return the transaction ID
   });
 }
 
 export async function updateTransaction(id: number, changes: Partial<Transaction>) {
-  // This is tricky because changing amount/type/account requires reverting the old balance impact and applying the new one.
-  // For simplicity, we can fetch the old transaction, revert its effect, then apply the new transaction effect.
-
   return await db.transaction('rw', db.accounts, db.transactions, async () => {
     const oldTransaction = await db.transactions.get(id);
     if (!oldTransaction) throw new Error("Transaction not found");
@@ -96,7 +90,7 @@ export async function updateTransaction(id: number, changes: Partial<Transaction
 
     // Apply new transaction effect
     const newAccount = await db.accounts.get(Number(newTransaction.accountId));
-    if (!newAccount) throw new Error("New account not found"); // Should not happen if accountId didn't change or is valid
+    if (!newAccount) throw new Error("New account not found");
 
     let newBalance = newAccount.balance;
      if (newTransaction.type === 'INCOME') {
