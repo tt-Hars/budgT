@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { useTransactions, useAccounts } from "@/hooks/use-db"
-import { AddTransactionDialog } from "./add-transaction-dialog"
+import { TransactionDialog } from "./add-transaction-dialog"
 import { format } from "date-fns"
 import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft } from "lucide-react"
 import type { Transaction, Account } from "@/db"
@@ -12,7 +12,12 @@ interface TransactionListProps {
 
 export function TransactionListView({ transactions, accounts }: TransactionListProps) {
   const getAccountName = (id: string) => {
-      return accounts?.find(a => a.id === id)?.name || "Unknown Account"
+      // id is stored as string in transaction, but might be number in account if Dexie auto-increment
+      // However, AddAccount uses string ID (wait, it's auto-increment, so it is number).
+      // The schema says id?: number.
+      // The transaction stores accountId as string.
+      // So we need to compare properly.
+      return accounts?.find(a => String(a.id) === id)?.name || "Unknown Account"
   }
 
   const getIcon = (type: string) => {
@@ -33,30 +38,34 @@ export function TransactionListView({ transactions, accounts }: TransactionListP
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Recent Transactions</h2>
-        <AddTransactionDialog />
+        <TransactionDialog />
       </div>
 
       <div className="space-y-3">
         {transactions?.map((transaction) => (
-          <Card key={transaction.id} className="overflow-hidden shadow-sm border-muted-foreground/20 hover:shadow-md transition-shadow">
-            <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-muted rounded-full">
-                        {getIcon(transaction.type)}
-                    </div>
-                    <div>
-                        <div className="font-medium">{transaction.description || transaction.category}</div>
-                        <div className="text-xs text-muted-foreground">
-                            {format(new Date(transaction.date), 'MMM d, yyyy')} • {getAccountName(transaction.accountId)}
-                            {transaction.type === 'TRANSFER' && ` -> ${getAccountName(transaction.transferToAccountId || "")}`}
+          <TransactionDialog key={transaction.id} transaction={transaction}>
+            <div className="cursor-pointer">
+                <Card className="overflow-hidden shadow-sm border-muted-foreground/20 hover:shadow-md transition-shadow">
+                    <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-muted rounded-full">
+                                {getIcon(transaction.type)}
+                            </div>
+                            <div>
+                                <div className="font-medium">{transaction.description || transaction.category}</div>
+                                <div className="text-xs text-muted-foreground">
+                                    {format(new Date(transaction.date), 'MMM d, yyyy')} • {getAccountName(transaction.accountId)}
+                                    {transaction.type === 'TRANSFER' && ` -> ${getAccountName(transaction.transferToAccountId || "")}`}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div className={`font-bold ${transaction.type === 'INCOME' ? 'text-green-500' : transaction.type === 'EXPENSE' ? 'text-red-500' : ''}`}>
-                    {transaction.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(transaction.amount)}
-                </div>
-            </CardContent>
-          </Card>
+                        <div className={`font-bold ${transaction.type === 'INCOME' ? 'text-green-500' : transaction.type === 'EXPENSE' ? 'text-red-500' : ''}`}>
+                            {transaction.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(transaction.amount)}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+          </TransactionDialog>
         ))}
          {transactions?.length === 0 && (
             <div className="text-center p-4 text-muted-foreground border border-dashed rounded-lg">
