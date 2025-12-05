@@ -21,14 +21,16 @@ import {
               <Plus className="mr-2 h-4 w-4" /> Add Transaction
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="w-[95vw] max-w-[425px] rounded-lg">
           <DialogHeader>
             <DialogTitle>Add Transaction</DialogTitle>
             <DialogDescription>
               Log an expense, income, or transfer.
             </DialogDescription>
           </DialogHeader>
-          <AddTransactionForm onSuccess={() => setOpen(false)} />
+          <div className="max-h-[80vh] overflow-y-auto px-1">
+             <AddTransactionForm onSuccess={() => setOpen(false)} />
+          </div>
         </DialogContent>
       </Dialog>
     )

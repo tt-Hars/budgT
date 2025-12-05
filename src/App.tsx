@@ -12,16 +12,16 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <div className="min-h-screen bg-background text-foreground font-sans antialiased">
-        <header className="p-4 border-b flex justify-between items-center sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+        <header className="px-4 py-3 border-b flex justify-between items-center sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
           <h1 className="text-xl font-bold tracking-tight">budgT</h1>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-1 items-center">
              <Button variant="ghost" size="icon" onClick={() => exportDataToCSV()} title="Export Backup">
-                <Download className="h-[1.2rem] w-[1.2rem]" />
+                <Download className="h-5 w-5" />
              </Button>
              <ModeToggle />
           </div>
         </header>
-        <main className="container mx-auto p-4 max-w-lg space-y-8">
+        <main className="container mx-auto p-4 pb-20 max-w-lg space-y-6">
            <DashboardOverview />
            <AccountList />
            <TransactionList />
