@@ -3,11 +3,14 @@ import { useTransactions, useAccounts } from "@/hooks/use-db"
 import { AddTransactionDialog } from "./add-transaction-dialog"
 import { format } from "date-fns"
 import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft } from "lucide-react"
+import type { Transaction, Account } from "@/db"
 
-export function TransactionList() {
-  const transactions = useTransactions()
-  const accounts = useAccounts()
+interface TransactionListProps {
+    transactions: Transaction[] | undefined
+    accounts: Account[] | undefined
+}
 
+export function TransactionListView({ transactions, accounts }: TransactionListProps) {
   const getAccountName = (id: string) => {
       return accounts?.find(a => a.id === id)?.name || "Unknown Account"
   }
@@ -63,4 +66,10 @@ export function TransactionList() {
       </div>
     </div>
   )
+}
+
+export function TransactionList() {
+  const transactions = useTransactions()
+  const accounts = useAccounts()
+  return <TransactionListView transactions={transactions} accounts={accounts} />
 }

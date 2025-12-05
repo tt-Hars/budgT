@@ -2,10 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAccounts } from "@/hooks/use-db"
 import { AddAccountDialog } from "./add-account-dialog"
 import { CreditCard, Wallet, Banknote, Building2 } from "lucide-react"
+import type { Account } from "@/db"
 
-export function AccountList() {
-  const accounts = useAccounts()
+interface AccountListProps {
+  accounts: Account[] | undefined
+  onAddAccount?: () => void
+}
 
+export function AccountListView({ accounts, onAddAccount }: AccountListProps) {
   const getIcon = (type: string) => {
     switch (type) {
       case 'CREDIT_CARD': return <CreditCard className="h-5 w-5" />;
@@ -23,6 +27,12 @@ export function AccountList() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Accounts</h2>
+        {/* If onAddAccount is passed, we could render a button, but here we keep the dialog or make it pluggable.
+            For now, we keep the Dialog but it needs context.
+            To keep pure, we might just slot it or ignore for storybook.
+            However, AddAccountDialog is coupled to DB.
+            Let's keep it here for now but ideally it should be lifted too.
+        */}
         <AddAccountDialog />
       </div>
 
@@ -56,4 +66,9 @@ export function AccountList() {
       </div>
     </div>
   )
+}
+
+export function AccountList() {
+  const accounts = useAccounts()
+  return <AccountListView accounts={accounts} />
 }
